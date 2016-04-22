@@ -1,0 +1,96 @@
+<div id="request">
+    <div class="panel panel-default">
+        <div class="panel-heading">请求配置</div>
+        <div class="panel-body">
+            <form class="form-inline">
+                <div class="input-group col-sm-12">
+                    <select name="method" class="form-control" data-live-search="true"
+                            title="Please select a lunch ..." style="width: 20%">
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="DELETE">DELETE</option>
+                    </select>
+                    <input type="text" class="form-control" name="url" placeholder="输入URL" style="width: 80%"/>
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="button" id="request-param">参数</button>
+                    </span>
+                </div>
+            </form>
+        </div>
+        <div id="request-param-tab" style="display: none;">
+            <table class="table table-bordered">
+                <tbody>
+                <tr>
+                    <td><input class="form-control" data-name="key" placeholder="键"/></td>
+                    <td><input class="form-control" data-name="value_eg" placeholder="值"/></td>
+                    <td><input class="form-control" data-name="type" placeholder="类型"/></td>
+                    <td><input class="form-control" data-name="comment" placeholder="注释"/></td>
+                    <td>
+                        <button class="btn add-request-param">增加</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">响应配置</div>
+        <div class="panel-body">
+            <form>
+                <div class="form-group">
+                    <label for="response_eg">响应样例(目前只支持json格式)</label>
+                    <textarea  name="value_eg" class="form-control" id="response_eg" rows="5"></textarea>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button id="save-request" class="btn btn-primary">保存</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/plain" class="request-param-tab-template">
+    <tr>
+         <td><input class="form-control" data-name="key" placeholder="键"/></td>
+        <td><input class="form-control" data-name="value_eg" placeholder="值"/></td>
+        <td><input class="form-control" data-name="type" placeholder="类型"/></td>
+        <td><input class="form-control" data-name="comment" placeholder="注释"/></td>
+        <td>
+            <button class="btn add-request-param">增加</button>
+            <button class="btn delete-request-param">删除</button>
+        </td>
+    </tr>
+
+</script>
+
+
+<script type="application/javascript">
+    $("#request-param").on("click", function () {
+        $("#request-param-tab").toggle();
+    });
+
+    $("body").on("click", ".add-request-param", function () {
+        $(this).closest("tbody").append(Handlebars.compile($(".request-param-tab-template").text()));
+    });
+
+    $("body").on("click", ".delete-request-param", function () {
+        $(this).closest("tr").remove();
+    });
+
+    $("body").on("click", "#save-request", function () {
+        $("#request-param-tab tr").each(function (index) {
+            $(this).find("input").each(function () {
+                $(this).attr("name", "requestParam[" + index + "][" + $(this).data("name") + "]");
+            })
+        });
+        var form = $("#request").find("select, textarea, input").serialize();
+        $.post("/requests/create", form).done(function (data) {
+            console.dir(data);
+        });
+
+    });
+
+
+</script>
