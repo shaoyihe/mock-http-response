@@ -12,43 +12,51 @@ var sequelize = new Sequelize(mysql.database, mysql.userName, mysql.password, {
     dialect: 'mysql',
     pool: {
         max: 20,
-        min: 0,
+        min: 2,
         idle: 10000
     }
 });
+exports.sequelize = sequelize;
 
-var User = sequelize.define('user', {
-    firstName: {
-        type: Sequelize.STRING,
-        field: 'first_name',
-        validate: {min: 23}
-    },
-    lastName: {
-        type: Sequelize.STRING,
-        validate: {
-            notNull: true
-        }
-    }
-});
-
-var Team = sequelize.define('team', {
+exports.User = sequelize.define('user', {
     name: {
         type: Sequelize.STRING,
-        field: 'first_name',
-        validate: {min: 23}
+        unique: true,
+    },
+    email: {
+        type: Sequelize.STRING,
+        unique: true
+    },
+    password: {
+        type: Sequelize.STRING
     }
 });
 
-var UserTeam = sequelize.define('user_team');
 
-User.belongsToMany(Team, {through: UserTeam});
-Team.belongsToMany(User, {through: UserTeam});
+exports.Project = sequelize.define('project', {
+    name: {
+        type: Sequelize.STRING,
+        unique: true
+    },
+    description: {
+        type: Sequelize.STRING
+    }
+});
+
+exports.User.belongsToMany(exports.Project, {as: 'Projects', through: 'user_projects', foreignKey: 'userId'});
+exports.Project.belongsToMany(exports.User, {as: 'Users', through: 'user_projects', foreignKey: 'projectId'});
 
 /**
  * 请求主表
  * @type {Model}
  */
 exports.Request = sequelize.define('request', {
+    name: {
+        type: Sequelize.STRING
+    },
+    description: {
+        type: Sequelize.STRING
+    },
     method: {
         type: Sequelize.STRING
     },
@@ -59,6 +67,8 @@ exports.Request = sequelize.define('request', {
         type: Sequelize.TEXT
     }
 });
+
+exports.Project.hasMany(exports.Request, {as: 'Requests'});
 
 /**
  * 请求参数
@@ -82,7 +92,7 @@ exports.RequestParam = sequelize.define('request_param', {
     }
 });
 
-exports.Request.hasMany(exports.RequestParam);
+exports.Request.hasMany(exports.RequestParam, {as: 'Requests'});
 
 /**
  * 响应参数

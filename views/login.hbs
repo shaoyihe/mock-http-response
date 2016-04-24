@@ -1,0 +1,72 @@
+<div class="panel panel-default">
+    <div class="panel-heading">登录</div>
+    <div class="panel-body">
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#login-by-name" aria-controls="login-by-name" role="tab"
+                                                      data-toggle="tab">使用用户名</a></li>
+            <li role="presentation"><a href="#login-by-email" aria-controls="login-by-email" role="tab"
+                                       data-toggle="tab">使用邮箱</a></li>
+        </ul>
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="login-by-name">
+                <form class="form-horizontal">
+                    <input name="loginType" type="hidden" value="1"/>
+                    <div class="form-group">
+                        <label for="name" class="col-sm-2 control-label">用户名</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" name="name" id="name" placeholder="Name">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="password-by-name" class="col-sm-2 control-label">密码</label>
+                        <div class="col-sm-6">
+                            <input type="password" class="form-control" name="password" id="password-by-name"
+                                   placeholder="Password">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-6">
+                            <button type="button" class="btn btn-default login-btn">登录</button>
+                            <a href="/register">注册</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="login-by-email">
+                <form class="form-horizontal">
+                    <input name="loginType" type="hidden" value="2"/>
+                    <div class="form-group">
+                        <label for="email" class="col-sm-2 control-label">邮箱</label>
+                        <div class="col-sm-6">
+                            <input type="email" class="form-control" name="email" id="email" placeholder="email">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="password-by-email" class="col-sm-2 control-label">密码</label>
+                        <div class="col-sm-6">
+                            <input type="password" class="form-control" name="password" id="password-by-email"
+                                   placeholder="Password">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-6">
+                            <button type="button" class="btn btn-default login-btn">登录</button>
+                            <a href="/register">注册</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(".login-btn").on("click", function () {
+        var form = $(this).closest("form").find("input").serialize();
+        $.post("/login", form, "json").done(function (data) {
+            if (messagePro(data)) {
+                window.location.href = "/";
+            }
+        });
+    });
+</script>
