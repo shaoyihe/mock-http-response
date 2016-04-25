@@ -5,6 +5,13 @@ var db = require('../util/db');
 var message = require('../util/message');
 var login_auth = require('../middle/login-auth');
 
+router.use(function (req, res, next) {
+    if (req.session.user && ["/login", "/register"].indexOf(req.path) != -1) {
+        res.redirect(303, "/");
+    } else {
+        next();
+    }
+});
 
 router.route("/login").get(function (req, res, next) {
     res.render('login', {title: '登录'});
@@ -23,7 +30,6 @@ router.route("/login").get(function (req, res, next) {
                 password: sha1(body.password)
             }
         })).then((user)=> {
-        console.dir(user);
         if (user) {
             req.session.user = user;
             res.json(message.success);
@@ -50,9 +56,15 @@ router.route("/register").get(function (req, res, next) {
 
 router.use(login_auth);
 
+
 /* GET home page. */
 router.get('/', function (req, res, next) {
     res.render('index', {title: 'Express'});
+});
+
+router.get('/logout', function (req, res, next) {
+    delete req.session.user;
+    res.redirect(303, "/login");
 });
 
 module.exports = router;

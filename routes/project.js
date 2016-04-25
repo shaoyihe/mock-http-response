@@ -40,4 +40,47 @@ router.route("/").get(function (req, res, next) {
     });
 });
 
+/**
+ * 删除项目
+ */
+router.post("/((\\d+))/delete", function (req, res, next) {
+    var projectId = req.params[0];
+    db.Request.findAll({
+        where: {
+            projectId: projectId
+        },
+        attributes: ["id"]
+    }).then(function (requests) {
+        db.sequelize.transaction((t)=> {
+            return db.Response.destroy({
+                where: {
+                    requestId: {
+                        $in: requests.map((a)=>a.id)
+                    }
+                },
+                transaction: t
+            }).then(function () {
+                return db.Request.destroy({
+                    where: {
+                        projectId: projectId
+                    },
+                    transaction: t
+                }).then(()=> {
+                    return db.Project.destroy({
+                        where: {id: projectId},
+                        transaction: t
+                    });
+                });
+            });
+        }).then(function (result) {
+            res.json(message.success);
+        }).catch(function (err) {
+            next(err);
+        });
+    }).catch(function (err) {
+        next(err);
+    });
+
+});
+
 module.exports = router;

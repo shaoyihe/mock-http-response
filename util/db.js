@@ -92,7 +92,7 @@ exports.RequestParam = sequelize.define('request_param', {
     }
 });
 
-exports.Request.hasMany(exports.RequestParam, {as: 'Requests'});
+exports.Request.hasMany(exports.RequestParam, {as: 'RequestParams'});
 
 /**
  * 响应参数

@@ -36,32 +36,85 @@ router.route("/").get(function (req, res, next) {
 });
 
 router.route('/((\\d+))').get(function (req, res, next) {
+        var requestId = req.params[0];
         if (req.acceptJson()) {
-            next();
-        } else {
-            res.render("request", {title: "请求"})
-        }
-    }
-).post(function (req, res, next) {
-        var body = {};
-        for (let v in req.body) {
-            el(body, v, req.body[v]);
-        }
-        db.Request.create(body).then(function (request) {
-            var requestParams = body.requestParam.map((v, i)=> {
-                v.order = i;
-                v.requestId = request.id;
-                return v;
-            });
-            db.RequestParam.bulkCreate(requestParams).then(function () {
-                res.json({code: 0});
+            db.Request.findById(requestId).then(function (request) {
+                db.RequestParam.findAll({
+                    where: {
+                        requestId: requestId
+                    },
+                    order: " 'order' "
+                }).then(function (requestParams) {
+                    request.setDataValue("requestParams", requestParams);
+                    res.json(_.defaults({data: request}, message.success));
+                }).catch(function (err) {
+                    next(err);
+                });
+
             }).catch(function (err) {
                 next(err);
             });
+        } else {
+            res.render("request", {title: "请求"});
+        }
+    }
+).post(function (req, res, next) {
+    var body = {};
+    for (let v in req.body) {
+        el(body, v, req.body[v]);
+    }
+    var requestId = req.params[0];
+
+    db.Request.findById(requestId).then(function (request) {
+        db.sequelize.transaction((t)=> {
+            return db.RequestParam.destroy({
+                where: {
+                    requestId: requestId
+                },
+                transaction: t
+            }).then(function () {
+                return request.update(body, {transaction: t}).then(function () {
+                    var requestParams = body.requestParam.map((v, i)=> {
+                        v.order = i;
+                        v.requestId = requestId;
+                        return v;
+                    });
+                    return db.RequestParam.bulkCreate(requestParams, {transaction: t});
+                });
+            });
+        }).then(function (result) {
+            res.json(message.success);
         }).catch(function (err) {
             next(err);
         });
-    }
-);
+    });
+});
+
+/**
+ * 删除请求
+ */
+router.post("/((\\d+))/delete", function (req, res, next) {
+    var requestId = req.params[0];
+    db.sequelize.transaction((t)=> {
+        return db.Response.destroy({
+            where: {
+                requestId: requestId
+            }, transaction: t
+        }).then(function () {
+            return db.Request.destroy({
+                where: {
+                    projectId: projectId
+                },
+                transaction: t
+            });
+        });
+    }).then(function (result) {
+        res.json(message.success);
+    }).catch(function (err) {
+        next(err);
+    });
+
+})
+;
 
 module.exports = router;

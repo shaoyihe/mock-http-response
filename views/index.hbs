@@ -1,4 +1,12 @@
 <link rel='stylesheet' href='/style/tree.css'/>
+<nav class="navbar navbar-default">
+    <p class="navbar-text">欢迎
+        <sapn class="red">{{user.name}}</sapn>
+    </p>
+    <div class="collapse navbar-collapse">
+        <button class="btn btn-default navbar-btn navbar-right"><a href="/logout">退出</a></button>
+    </div>
+</nav>
 
 <div class="col-sm-4">
     <div class="panel panel-default">
@@ -13,10 +21,7 @@
         </div>
     </div>
 </div>
-<div class="col-sm-8" style="height: 600px">
-    <iframe src="" class="embed-responsive-item" style="width: 100%;height: 100%" id="request-iframe">
-
-    </iframe>
+<div class="col-sm-8" id="request-detail-div">
 </div>
 
 
@@ -80,7 +85,7 @@
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" style="">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
                 <button type="button" class="btn btn-primary" id="save-new-request">确定</button>
             </div>
@@ -92,8 +97,8 @@
  \{{#each projects}}
     <li>
         <div class="parent" data-project-id="\{{id}}">
-            <span class="project-node span-node" ><i class="icon-folder-open"></i>\{{name}} </span>
-            <a href="javascript:void(0);" style="float: right" class="new-request">增加请求</a>
+            <span class="project-node span-node" ><i class="icon-folder-open"></i>\{{name}} </span> /apis/\{{id}}
+            <a href="javascript:void(0);" style="float: right" class="project-node-oper">...</a>
         </div>
         <ul class="requests">
         </ul>
@@ -102,25 +107,131 @@
 
 
 
+
+</script>
+
+<script type="text/plain" class="project-node-oper-template">
+    <div data-project-id="\{{projectId}}">
+        <a href="javascript:void(0);" class="new-request">增加请求</a>
+        <br/>
+        <a href="javascript:void(0);" class="delete-project">删除项目</a>
+    </div>
+
+
 </script>
 
 <script type="text/plain" class="request-template">
  \{{#each requests}}
     <li data-id="\{{id}}">
-        <span class="rquest-span"><i class="icon-leaf"></i>\{{name}}</span>
+        <span class="rquest-span"><i class="icon-leaf"></i>\{{name}}{{name}}</span>
+        <div style="display:inline" class="request-url">\{{url}} </div>
     </li>
 \{{/each}}
 
 
+
+</script>
+
+<script type="text/plain" class="request-detail-template">
+    <div class="panel panel-default">
+        <input type="hidden" value="\{{id}}" id="request-id"/>
+        <div class="panel-heading">请求配置(\{{name}})</div>
+        <div class="panel-body">
+            <form class="form-inline">
+                <div class="input-group col-sm-12">
+                    <select name="method" class="form-control" data-live-search="true"
+                            title="Please select a lunch ..." style="width: 20%">
+                        <option value="GET" \{{#ifCond method '==' 'GET' }}selected\{{/ifCond}}>GET</option>
+                        <option value="POST" \{{#ifCond method '==' 'POST' }}selected\{{/ifCond}}>POST</option>
+                        <option value="PUT" \{{#ifCond method '==' 'PUT' }}selected\{{/ifCond}}>PUT</option>
+                        <option value="DELETE" \{{#ifCond method '==' 'DELETE' }}selected\{{/ifCond}}>DELETE</option>
+                    </select>
+                    <input type="text" class="form-control" name="url" placeholder="输入URL" value="\{{url}}" id="request-url" style="width: 80%"/>
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="button" id="request-param">参数</button>
+                    </span>
+                </div>
+            </form>
+        </div>
+        <div id="request-param-tab" style="display: none;">
+            <table class="table table-bordered">
+                <tbody>
+                \{{#each requestParams}}
+                    <tr>
+                        <td><input class="form-control" data-name="key" value="\{{key}}" placeholder="键"/></td>
+                        <td><input class="form-control" data-name="value_eg"  value="\{{value_eg}}" placeholder="值样例"/></td>
+                        <td><input class="form-control" data-name="type"  value="\{{type}}" placeholder="类型"/></td>
+                        <td><input class="form-control" data-name="comment" value="\{{comment}}"  placeholder="注释"/></td>
+                        <td>
+                            <button class="btn add-request-param">增加</button>
+                            <button class="btn delete-request-param">删除</button>
+                        </td>
+                    </tr>
+                \{{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">响应配置</div>
+        <div class="panel-body">
+            <form>
+                <div class="form-group">
+                    <label for="response_eg">响应样例(目前只支持json格式)</label>
+                    <textarea name="response_eg" class="form-control" id="response_eg" rows="5">\{{response_eg}}</textarea>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button type="button" id="save-request" class="btn btn-primary">保存</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+
+</script>
+
+<script type="text/plain" class="request-param-tab-template">
+    <tr>
+         <td><input class="form-control" data-name="key" placeholder="键"/></td>
+        <td><input class="form-control" data-name="value_eg" placeholder="值样例"/></td>
+        <td><input class="form-control" data-name="type" placeholder="类型"/></td>
+        <td><input class="form-control" data-name="comment" placeholder="注释"/></td>
+        <td>
+            <button class="btn add-request-param">增加</button>
+            <button class="btn delete-request-param">删除</button>
+        </td>
+    </tr>
 
 
 </script>
 
 <script type="application/javascript">
     $(function () {
-        var projectTemplate = Handlebars.compile($(".project-template").text());
-        var requestemplate = Handlebars.compile($(".request-template").text());
+        function initTree() {
+            $('.tree li:has(ul)').addClass('parent_li').find('span').attr('title', '扩展');
+        }
 
+        var projectNodeOperTemplate = Handlebars.compile($(".project-node-oper-template").text());
+
+        function initProjectNodeOper() {
+            $(".project-node-oper").each(function () {
+                $this = $(this);
+                var projectId = $this.closest(".parent").data("project-id");
+                $this.popover({
+                    html: true,
+                    content: projectNodeOperTemplate({projectId: projectId}),
+                    container: 'body',
+                    placement: "bottom"
+                });
+            })
+        }
+
+        // 项目相关
+        var projectTemplate = Handlebars.compile($(".project-template").text());
         $(".new-project").click(function () {
             $('#new-project-modal form')[0].reset();
             $('#new-project-modal').modal('show')
@@ -129,35 +240,15 @@
         $("#save-new-project").click(function () {
             $.post("/projects", $(".new-project-form").serialize()).then(function (data) {
                 if (messagePro(data)) {
-                    $("#project-tree ul:first").append(projectTemplate({projects: [data.data]}));
-                    $('#new-project-modal').modal('hide')
+                    $("#project-tree ul:first").append(projectTemplate({
+                        projects: [data.data]
+                    }));
+                    $('#new-project-modal').modal('hide');
+                    initTree();
+                    initProjectNodeOper();
                 }
             });
         });
-
-        $("#save-new-request").click(function () {
-            $.post("/requests", $(".new-request-form").serialize()).then(function (data) {
-                if (messagePro(data)) {
-                    $('#new-request-modal').data("parent").closest("li").find(".requests")
-                            .append(requestemplate({requests: [data.data]}));
-                    $('#new-request-modal').modal('hide')
-                }
-            });
-        });
-
-        function initTree() {
-            $('.tree li:has(ul)').addClass('parent_li').find('span').attr('title', '扩展');
-        }
-
-        $("body").on('click', ".new-request", function () {
-            var modal = $("#new-request-modal");
-            modal.find("form")[0].reset();
-            $parent = $(this).closest(".parent");
-            modal.find("#projectId").val($parent.data("project-id"));
-            $('#new-request-modal').data("parent", $parent);
-            $("#new-request-modal").modal("show");
-        });
-
         $("body").on('click', ".project-node", function (e) {
             var $this = $(this);
             if (!$this.data("had-load")) {
@@ -183,19 +274,109 @@
             e.stopPropagation();
         });
 
-        $("body").on("click", ".rquest-span", function () {
-            var requestId = $(this).closest("li").data("id");
-            $("#request-iframe").attr("src", "/requests/" + requestId);
+        $("body").on('click', ".delete-project", function (e) {
+            $(".project-node-oper").popover("hide");
+            var $this = $(this);
+            bootbox.confirm({
+                size: 'small',
+                message: "是否要删除该项目和包含的全部请求",
+                callback: function (result) {
+                    if (result) {
+                        var projectId = $this.parent().data("project-id");
+                        $.post("/projects/" + projectId + "/delete").done(function (data) {
+                            if (messagePro(data)) {
+                                $(".parent[data-project-id='" + projectId + "']").closest(".parent_li").remove();
+                            }
+                        });
+                    }
+                }
+            });
+
         });
 
         //load projects
         $.getJSON("/projects").then(function (data) {
             if (messagePro(data)) {
-                $("#project-tree ul").html(projectTemplate({projects: data.data}));
+                $("#project-tree ul").html(projectTemplate({
+                    projects: data.data
+                }));
                 initTree();
+                initProjectNodeOper();
             }
         });
 
+        //请求相关
+        var requestemplate = Handlebars.compile($(".request-template").text());
+        $("#save-new-request").click(function () {
+            $.post("/requests", $(".new-request-form").serialize()).then(function (data) {
+                if (messagePro(data)) {
+                    $(".parent[data-project-id='" + data.data.projectId + "']").parent().find(".requests")
+                            .append(requestemplate({requests: [data.data]}));
+                    $('#new-request-modal').modal('hide');
+                    $(".requests li[data-id='" + data.data.id + "'] .rquest-span").click();
+                }
+            });
+        });
+
+        $("body").on('click', ".new-request", function () {
+            $(".project-node-oper").popover("hide");
+            var modal = $("#new-request-modal");
+            modal.find("form")[0].reset();
+            var projectId = $(this).closest("div").data("project-id");
+            modal.find("#projectId").val(projectId);
+            $("#new-request-modal").modal("show");
+        });
+
+        $("body").on("click", ".rquest-span", function () {
+            $(".requests .background-red").removeClass("background-red");
+            $(this).addClass("background-red");
+            var requestId = $(this).closest("li").data("id");
+            $.getJSON("/requests/" + requestId).then(function (data) {
+                if (messagePro(data)) {
+                    $("#request-detail-div").html(Handlebars.compile($(".request-detail-template").text())(data.data));
+                    ifReuestParamsNull();
+                }
+            });
+        });
+
+        //请求明细相关
+        var request_param_tab_template = Handlebars.compile($(".request-param-tab-template").text());
+
+        /**
+         * 如果请求参数不存在初始化一个
+         */
+        function ifReuestParamsNull() {
+            var tbody = $("#request-param-tab tbody");
+            if (!tbody.find("tr").length) {
+                tbody.append(request_param_tab_template());
+            }
+        }
+
+        $("body").on("click", "#request-param", function () {
+            $("#request-param-tab").toggle();
+        });
+
+        $("body").on("click", ".add-request-param", function () {
+            $(this).closest("tbody").append(request_param_tab_template());
+        });
+
+        $("body").on("click", ".delete-request-param", function () {
+            $(this).closest("tr").remove();
+            ifReuestParamsNull();
+        });
+
+        $("body").on("click", "#save-request", function () {
+            $("#request-param-tab tr").each(function (index) {
+                $(this).find("input").each(function () {
+                    $(this).attr("name", "requestParam[" + index + "][" + $(this).data("name") + "]");
+                })
+            });
+            var form = $("#request-detail-div").find("select, textarea, input").serialize();
+            var requestId = $("#request-id").val();
+            $.post("/requests/" + requestId, form).done(function (data) {
+                $(".requests li[data-id='" + requestId + "'] .request-url").text($("#request-url").val());
+            });
+
+        });
     });
 </script>
-<script src="/js/tree.js"></script>

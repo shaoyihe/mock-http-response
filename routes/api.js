@@ -17,7 +17,8 @@ router.all('/((\\d+))/((*+))', function (req, res, next) {
     db.Request.findOne({
         where: {
             method: req.method,
-            url: path
+            url: "/" + path,
+            projectId: prjId
         }
     }).then(function (req) {
         if (req) {
