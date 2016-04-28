@@ -5,6 +5,10 @@
 "use strict";
 
 module.exports = function (req, res, next) {
+    if (["/login", "/register"].indexOf(req.path) >= 0 || req.path.startsWith("/apis")) {
+        next();
+        return;
+    }
     if (req.session.user) {
         res.locals.user = req.session.user;
         next();

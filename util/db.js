@@ -21,7 +21,7 @@ exports.sequelize = sequelize;
 exports.User = sequelize.define('user', {
     name: {
         type: Sequelize.STRING,
-        unique: true,
+        unique: true
     },
     email: {
         type: Sequelize.STRING,
@@ -108,12 +108,20 @@ exports.Response = sequelize.define('response', {
     comment: {
         type: Sequelize.STRING
     },
-    parentId: {
+    level: {
         type: Sequelize.INTEGER,
-        defaultValue: 0
+        defaultValue: 1
     },
     order: {
         type: Sequelize.INTEGER
+    },
+    markId: {
+        type: Sequelize.INTEGER,
+        field: "mark_id"
+    },
+    parentMarkId: {
+        type: Sequelize.INTEGER,
+        field: "parent_mark_id"
     }
 });
 

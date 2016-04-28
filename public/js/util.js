@@ -6,7 +6,10 @@
 
 function messagePro(data) {
     if (data.code !== 0) {
-        alert(data.message);
+        bootbox.alert({
+            size: 'small',
+            message: data.message
+        });
         return false;
     }
     return true;

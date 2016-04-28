@@ -105,9 +105,6 @@
     </li>
 \{{/each}}
 
-
-
-
 </script>
 
 <script type="text/plain" class="project-node-oper-template">
@@ -116,7 +113,6 @@
         <br/>
         <a href="javascript:void(0);" class="delete-project">删除项目</a>
     </div>
-
 
 </script>
 
@@ -127,8 +123,6 @@
         <div style="display:inline" class="request-url">\{{url}} </div>
     </li>
 \{{/each}}
-
-
 
 </script>
 
@@ -153,7 +147,7 @@
                 </div>
             </form>
         </div>
-        <div id="request-param-tab" style="display: none;">
+        <div id="request-param-tab" style="">
             <table class="table table-bordered">
                 <tbody>
                 \{{#each requestParams}}
@@ -177,8 +171,13 @@
         <div class="panel-body">
             <form>
                 <div class="form-group">
-                    <label for="response_eg">响应样例(目前只支持json格式)</label>
+                    <label for="response_eg">响应样例(目前只支持json格式):</label> <button type="button" class="response-generate btn float-right btn-info btn-sm">生成响应</button>
                     <textarea name="response_eg" class="form-control" id="response_eg" rows="5">\{{response_eg}}</textarea>
+                </div>
+                <div class="well well-sm"">
+                    <label>响应明细:</label>
+                    <table class="response-tree table">
+                    </table>
                 </div>
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
@@ -188,9 +187,6 @@
             </form>
         </div>
     </div>
-
-
-
 
 </script>
 
@@ -206,8 +202,32 @@
         </td>
     </tr>
 
+</script>
+
+<script type="text/plain" class="response-template">
+<thead>
+    <tr>
+        <th>#</th>
+        <th>键</th>
+        <th>类型</th>
+        <th>注释</th>
+    </tr>
+</thead>
+<tbody>
+   \{{#each responses}}
+       <tr class="treegrid-\{{markId}} \{{#ifCond parentMarkId '!=' '0' }}treegrid-parent-\{{parentMarkId}}\{{/ifCond}}">
+        <td>\{{@index}}</td>
+        <td><input class="form-control" data-name="key" placeholder="键" value="\{{key}}"/></td>
+        <td><input class="form-control" data-name="type" placeholder="类型" value="\{{type}}"/></td>
+        <td><input class="form-control" data-name="comment" placeholder="注释" value="\{{comment}}"/></td>
+       <input type="hidden" data-name="markId" value="\{{markId}}"/>
+       <input type="hidden" data-name="parentMarkId" value="\{{parentMarkId}}"/>
+       </tr>
+   \{{/each}}
+</tbody>
 
 </script>
+
 
 <script type="application/javascript">
     $(function () {
@@ -255,7 +275,6 @@
                 $this.data("had-load", true);
                 $.getJSON("/requests?projectId=" + $this.closest(".parent").data("project-id")).then(function (data) {
                     if (messagePro(data)) {
-
                         $this.closest(".parent").closest("li").find(".requests").append(requestemplate({requests: data.data}));
                     } else {
                         $this.data("had-load", false);
@@ -334,6 +353,8 @@
             $.getJSON("/requests/" + requestId).then(function (data) {
                 if (messagePro(data)) {
                     $("#request-detail-div").html(Handlebars.compile($(".request-detail-template").text())(data.data));
+                    $(".response-tree").html(Handlebars.compile($(".response-template").text())({responses: data.data.responseParams}));
+                    $(".response-tree").treegrid();
                     ifReuestParamsNull();
                 }
             });
@@ -371,12 +392,74 @@
                     $(this).attr("name", "requestParam[" + index + "][" + $(this).data("name") + "]");
                 })
             });
+            $(".response-tree tr").each(function (index) {
+                $(this).find("input").each(function () {
+                    $(this).attr("name", "responseParam[" + index + "][" + $(this).data("name") + "]");
+                })
+            });
             var form = $("#request-detail-div").find("select, textarea, input").serialize();
             var requestId = $("#request-id").val();
             $.post("/requests/" + requestId, form).done(function (data) {
                 $(".requests li[data-id='" + requestId + "'] .request-url").text($("#request-url").val());
+                bootbox.alert({
+                    size: 'small',
+                    message: "保存成功"
+                });
             });
 
         });
+
+        /**
+         * 四种类型
+         * @param responeEgJson
+         * @param responses
+         * @param level
+         */
+        function generateResponse(responeEgJson, responses, level, ids, parentId) {
+            for (var field in responeEgJson) {
+                var value = responeEgJson[field];
+                if ($.isArray(value)) {
+                    responses.push({markId: ++ids[0], key: field, type: "Array", level: level, parentMarkId: parentId});
+                    generateResponse(value, responses, level + 1, ids, ids[0]);
+                    continue;
+                } else if ($.isPlainObject(value)) {
+                    responses.push({markId: ++ids[0], key: field, type: "Json", level: level, parentMarkId: parentId});
+                    generateResponse(value, responses, level + 1, ids, ids[0]);
+                    continue;
+                }
+
+                if (!$.isArray(responeEgJson)) {
+                    responses.push({
+                        markId: ++ids[0],
+                        key: field,
+                        type: (isNaN(value) ? "String" : "Number"),
+                        level: level,
+                        parentMarkId: parentId
+                    });
+                }
+            }
+        }
+
+        $("body").on("click", ".response-generate", function () {
+            try {
+                var eg = $("#response_eg").val().trim();
+                if (eg == "" || eg.charAt(0) !== "{") {
+                    throw new Error("");
+                }
+                var responeEgJson = jQuery.parseJSON(eg);
+                var result = [];
+                generateResponse(responeEgJson, result, 0, [0], 0);
+
+                $(".response-tree").html(Handlebars.compile($(".response-template").text())({responses: result}));
+                $(".response-tree").treegrid();
+            } catch (err) {
+                bootbox.alert({
+                    size: 'small',
+                    message: "响应样例不是有效的json格式," + err
+                });
+            }
+        });
     });
 </script>
+<link rel='stylesheet' href='/style/jquery.treegrid.css'/>
+<script src="/js/jquery.treegrid.min.js"></script>

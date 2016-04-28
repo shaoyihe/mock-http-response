@@ -54,8 +54,6 @@ router.route("/register").get(function (req, res, next) {
     });
 });
 
-router.use(login_auth);
-
 
 /* GET home page. */
 router.get('/', function (req, res, next) {

@@ -12,6 +12,7 @@ var router = express.Router();
  *
  */
 router.all('/((\\d+))/((*+))', function (req, res, next) {
+    console.log("test");
     var prjId = req.params[0];
     var path = req.params[1];
     db.Request.findOne({

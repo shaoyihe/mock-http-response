@@ -46,7 +46,15 @@ router.route('/((\\d+))').get(function (req, res, next) {
                     order: " 'order' "
                 }).then(function (requestParams) {
                     request.setDataValue("requestParams", requestParams);
-                    res.json(_.defaults({data: request}, message.success));
+                    db.Response.findAll({
+                        where: {
+                            requestId: requestId
+                        },
+                        order: " 'order' "
+                    }).then(function (responseParams) {
+                        request.setDataValue("responseParams", responseParams);
+                        res.json(_.defaults({data: request}, message.success));
+                    });
                 }).catch(function (err) {
                     next(err);
                 });
@@ -79,13 +87,27 @@ router.route('/((\\d+))').get(function (req, res, next) {
                         v.requestId = requestId;
                         return v;
                     });
-                    return db.RequestParam.bulkCreate(requestParams, {transaction: t});
+                    return db.RequestParam.bulkCreate(requestParams, {transaction: t}).then(function () {
+                        return db.Response.destroy({
+                            where: {
+                                requestId: requestId
+                            },
+                            transaction: t
+                        }).then(function () {
+                            var responseParams = body.responseParam.map((v, i)=> {
+                                v.order = i;
+                                v.requestId = requestId;
+                                return v;
+                            });
+                            return db.Response.bulkCreate(responseParams, {transaction: t});
+                        });
+                    });
                 });
+            }).then(function (result) {
+                res.json(message.success);
+            }).catch(function (err) {
+                next(err);
             });
-        }).then(function (result) {
-            res.json(message.success);
-        }).catch(function (err) {
-            next(err);
         });
     });
 });

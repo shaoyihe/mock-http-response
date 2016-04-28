@@ -51,8 +51,8 @@ app.use(session({
 }));
 
 
-app.use('/', routes);
 app.use('/apis', api);
+app.use('/', routes);
 app.use(login_auth);
 app.use('/users', users);
 app.use('/requests', request);
@@ -73,7 +73,7 @@ if (app.get('env') === 'development') {
     app.use(function (err, req, res, next) {
         console.log(err);
         if (req.acceptJson()) { //json
-            res.json(_.defaults({message: err.message}, message.exception));
+            res.json(_.defaults({message: "from response system " + err.message}, message.exception));
         } else {
             res.status(err.status || 500);
             res.render('error', {
@@ -89,7 +89,7 @@ if (app.get('env') === 'development') {
 app.use(function (err, req, res, next) {
     console.log(err);
     if (req.acceptJson()) { //json
-        res.json(message.exception);
+        res.json(_.defaults({message: "from response system error"}, message.exception));
     } else {
         res.status(err.status || 500);
         res.render('error', {
