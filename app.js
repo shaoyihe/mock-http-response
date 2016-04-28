@@ -51,9 +51,9 @@ app.use(session({
 }));
 
 
+app.use(login_auth);
 app.use('/apis', api);
 app.use('/', routes);
-app.use(login_auth);
 app.use('/users', users);
 app.use('/requests', request);
 app.use('/projects', project);

@@ -5,13 +5,6 @@ var db = require('../util/db');
 var message = require('../util/message');
 var login_auth = require('../middle/login-auth');
 
-router.use(function (req, res, next) {
-    if (req.session.user && ["/login", "/register"].indexOf(req.path) != -1) {
-        res.redirect(303, "/");
-    } else {
-        next();
-    }
-});
 
 router.route("/login").get(function (req, res, next) {
     res.render('login', {title: '登录'});
@@ -57,7 +50,7 @@ router.route("/register").get(function (req, res, next) {
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
-    res.render('index', {title: 'Express'});
+    res.render('index', {title: '我的项目'});
 });
 
 router.get('/logout', function (req, res, next) {
